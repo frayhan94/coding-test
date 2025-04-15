@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import {useEffect, useState} from "react";
 
 export default function Home() {
   const [salesReps, setSalesReps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [regionFilter, setRegionFilter] = useState("All");
   const [loadingOpenAi, setLoadingOpenAi] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -21,6 +22,10 @@ export default function Home() {
         setLoading(false);
       });
   }, []);
+
+  const filteredSalesReps = salesReps.filter((rep) => {
+    return regionFilter === "All" || rep.region === regionFilter;
+  });
 
   const handleAskQuestion = async () => {
     try {
@@ -45,11 +50,24 @@ export default function Home() {
         <h1 className="text-3xl font-bold mb-4">Sales Representatives</h1>
         {loading && <p>Loading...</p>}
         {error && <p style={{color: "red"}}>{error}</p>}
-
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <select
+              className="px-4 py-2 rounded border border-gray-300"
+              value={regionFilter}
+              onChange={(e) => setRegionFilter(e.target.value)}
+          >
+            <option value="All">All Regions</option>
+            {[...new Set(salesReps.map((rep) => rep.region))].map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+            ))}
+          </select>
+        </div>
 
         {!loading && !error && (
             <div className="grid gap-4">
-              {salesReps.map((rep) => (
+              {filteredSalesReps.map((rep) => (
                   <div
                       key={rep.id}
                       className="border rounded p-4 shadow"
@@ -87,7 +105,7 @@ export default function Home() {
         <section className={'mt-5'}>
           <h2>Ask a Question (AI Endpoint)</h2>
           <div className="flex flex-col sm:flex-row gap-4 items-center mt-4">
-          <input
+            <input
                 disabled={loadingOpenAi}
                 type="text"
                 placeholder="Enter your question..."
@@ -98,7 +116,8 @@ export default function Home() {
             <button
                 disabled={loadingOpenAi}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition"
-                onClick={handleAskQuestion}>Ask</button>
+                onClick={handleAskQuestion}>Ask
+            </button>
           </div>
           {
             loadingOpenAi ? (
@@ -107,7 +126,7 @@ export default function Home() {
                 </div>
             ) : (
                 <>
-                {answer && (
+                  {answer && (
                       <div className={'mt-2'}>
                         <strong>AI Response:</strong> {answer}
                       </div>

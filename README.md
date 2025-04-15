@@ -4,7 +4,7 @@
 
 1. Node js installed version 20
 2. Python installed version 3
-3. 
+
 ## Getting Started
 
 1. **Clone or Download** this repository (or fork it, as described above).

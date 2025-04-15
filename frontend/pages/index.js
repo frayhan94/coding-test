@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const [salesReps, setSalesReps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOpenAi, setLoadingOpenAi] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
@@ -23,6 +24,7 @@ export default function Home() {
 
   const handleAskQuestion = async () => {
     try {
+      setLoadingOpenAi(true);
       const response = await fetch("http://localhost:8000/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -32,6 +34,8 @@ export default function Home() {
       setAnswer(data.answer);
     } catch (error) {
       console.error("Error in AI request:", error);
+    } finally {
+        setLoadingOpenAi(false);
     }
   };
 
@@ -84,6 +88,7 @@ export default function Home() {
           <h2>Ask a Question (AI Endpoint)</h2>
           <div className="flex flex-col sm:flex-row gap-4 items-center mt-4">
           <input
+                disabled={loadingOpenAi}
                 type="text"
                 placeholder="Enter your question..."
                 value={question}
@@ -91,14 +96,25 @@ export default function Home() {
                 onChange={(e) => setQuestion(e.target.value)}
             />
             <button
+                disabled={loadingOpenAi}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition"
                 onClick={handleAskQuestion}>Ask</button>
           </div>
-          {answer && (
-              <div className={'mt-2'}>
-                <strong>AI Response:</strong> {answer}
-              </div>
-          )}
+          {
+            loadingOpenAi ? (
+                <div className={'mt-2'}>
+                  <span className={'text-sm'}>Loading Gemini Response</span>
+                </div>
+            ) : (
+                <>
+                {answer && (
+                      <div className={'mt-2'}>
+                        <strong>AI Response:</strong> {answer}
+                      </div>
+                  )}
+                </>
+            )
+          }
         </section>
       </div>
   );

@@ -1,20 +1,22 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [users, setUsers] = useState([]);
+  const [salesReps, setSalesReps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:8000/api/data")
       .then((res) => res.json())
       .then((data) => {
-        setUsers(data.users || []);
+        setSalesReps(data?.salesReps || []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch data:", err);
+        setError("Failed to load data");
         setLoading(false);
       });
   }, []);
@@ -34,41 +36,70 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Next.js + FastAPI Sample</h1>
+      <div className={"container mx-auto p-4"}>
 
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Dummy Data</h2>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <ul>
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.role}
-              </li>
-            ))}
-          </ul>
+        <h1 className="text-3xl font-bold mb-4">Sales Representatives</h1>
+        {loading && <p>Loading...</p>}
+        {error && <p style={{color: "red"}}>{error}</p>}
+
+
+        {!loading && !error && (
+            <div className="grid gap-4">
+              {salesReps.map((rep) => (
+                  <div
+                      key={rep.id}
+                      className="border rounded p-4 shadow"
+                  >
+                    <h2 className="text-xl font-semibold">{rep.name} ({rep.role})</h2>
+                    <p><strong>Region:</strong> {rep.region}</p>
+                    <p><strong>Skills:</strong> {rep.skills.join(", ")}</p>
+
+                    <div style={{marginTop: "1rem"}}>
+                      <h3>Deals</h3>
+                      <ul className="list-disc ml-5 mt-1">
+                        {rep.deals.map((deal, index) => (
+                            <li key={index}>
+                              {deal.client} - ${deal.value.toLocaleString()} ({deal.status})
+                            </li>
+                        ))}
+                      </ul>
+                    </div>
+
+
+                    <div className="mt-3">
+                      <h3 className="font-semibold">Clients</h3>
+                      <ul className="list-disc ml-5">
+                        {rep.clients.map((client, i) => (
+                            <li key={i}>
+                              {client.name} ({client.industry}) - {client.contact}
+                            </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+              ))}
+            </div>
         )}
-      </section>
-
-      <section>
-        <h2>Ask a Question (AI Endpoint)</h2>
-        <div>
+        <section className={'mt-5'}>
+          <h2>Ask a Question (AI Endpoint)</h2>
+          <div className="flex flex-col sm:flex-row gap-4 items-center mt-4">
           <input
-            type="text"
-            placeholder="Enter your question..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <button onClick={handleAskQuestion}>Ask</button>
-        </div>
-        {answer && (
-          <div style={{ marginTop: "1rem" }}>
-            <strong>AI Response:</strong> {answer}
+                type="text"
+                placeholder="Enter your question..."
+                value={question}
+                className="w-full sm:w-96 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition"
+                onChange={(e) => setQuestion(e.target.value)}
+            />
+            <button
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md transition"
+                onClick={handleAskQuestion}>Ask</button>
           </div>
-        )}
-      </section>
-    </div>
+          {answer && (
+              <div className={'mt-2'}>
+                <strong>AI Response:</strong> {answer}
+              </div>
+          )}
+        </section>
+      </div>
   );
 }

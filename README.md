@@ -40,4 +40,4 @@
 2. Style the list using tailwind css
 3. Implement filter by region to see the desired sales list
 4. Implement open AI integration using Gemini
-
+5. Visit swagger UI on this URL http://localhost:8000/docs
